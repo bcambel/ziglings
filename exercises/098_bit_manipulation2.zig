@@ -59,6 +59,12 @@ fn isPangram(str: []const u8) bool {
     // last we return the comparison if all 26 bits are set,
     // and if so, we know the given string is a pangram
     //
+    const expected_max_value = std.math.pow(u32, 2, 26) - 1;
+    // std.debug.print("{d} vs {d}\n", .{
+    //     max_val,
+    //     bits,
+    // });
     // but what do we have to compare?
-    return bits == 0x..???;
+    return bits == expected_max_value;
+    // return false;
 }

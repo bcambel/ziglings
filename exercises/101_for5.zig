@@ -51,7 +51,7 @@ pub fn main() void {
 
     // We would like to number our list starting with 1, not 0.
     // How do we do that?
-    for (roles, gold, experience, ???) |c, g, e, i| {
+    for (roles, gold, experience, 0..) |c, g, e, i| {
         const role_name = switch (c) {
             .wizard => "Wizard",
             .thief => "Thief",
@@ -60,7 +60,7 @@ pub fn main() void {
         };
 
         std.debug.print("{d}. {s} (Gold: {d}, XP: {d})\n", .{
-            i,
+            i + 1,
             role_name,
             g,
             e,
