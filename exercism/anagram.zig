@@ -1,13 +1,85 @@
 const std = @import("std");
 const mem = std.mem;
 
-pub fn detectAnagrams(allocator: mem.Allocator, word: []const u8, candidates: []const []const u8) !std.BufSet {
-    _ = allocator;
-    _ = word;
-    _ = candidates;
-    var my_hash_map = std.StringHashMap(V).init(allocator);
+fn val(s: []const u8) u32 {
+    var acc: u32 = 0;
+    for (s) |c| {
+        acc += c;
+    }
+    return acc;
+}
+// 97-122 a-z
+// 65-90 A-Z
+fn compareArrays(arr1: []u8, arr2: []u8) !bool {
+    var i: usize = 0;
+    var j: usize = 0;
+    var found: bool = false;
+    while (i < arr1.len) : (i += 1) {
+        j = 0;
+        found = false;
+        while (j < arr2.len) : (j += 1) {
+            if ((arr1[i] == arr2[j])) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return false;
+        }
+    }
+    return true;
 }
 
+pub fn detectAnagrams(allocator: mem.Allocator, word: []const u8, candidates: []const []const u8) !std.BufSet {
+    // _ = allocator;
+    var new_word: []u8 = try allocator.alloc(u8, word.len);
+
+    for (word, 0..) |c, i| {
+        new_word[i] = std.ascii.toUpper(c);
+    }
+
+    // _ = candidates;
+    // var my_hash_map = std.StringHashMap(u8).init(allocator);
+
+    var matches = std.BufSet.init(allocator);
+    const magic_val = val(new_word);
+    var isMatch: bool = false;
+
+    for (candidates) |candid| {
+        if (candid.len > word.len) {
+            continue;
+        } else {
+            var check_words: []u8 = try allocator.alloc(u8, candid.len);
+
+            for (candid, 0..) |c, i| {
+                check_words[i] = std.ascii.toUpper(c);
+            }
+            const curr_val = val(check_words);
+            isMatch = magic_val == curr_val and !std.mem.eql(u8, new_word, check_words);
+            std.debug.print("Comparing {s} {d} {d} vs {d} \n", .{ word, @intFromBool(isMatch), magic_val, curr_val });
+
+            if (isMatch and try compareArrays(new_word[0..], check_words[0..])) {
+                try matches.insert(candid);
+            }
+            defer allocator.free(check_words);
+        }
+    }
+    defer allocator.free(new_word);
+
+    return matches;
+}
+pub fn main() !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    const candidates = [_][]const u8{ "hello", "world", "zombies", "pants" };
+    _ = try detectAnagrams(allocator, "diaper", &candidates);
+
+    const candidates2 = [_][]const u8{ "lemons", "cherry", "melons" };
+    _ = try detectAnagrams(allocator, "solemn", &candidates2);
+
+    // defer allocator.
+}
 const testing = std.testing;
 // const detectAnagrams = @import("anagram.zig").detectAnagrams;
 fn testAnagrams(
